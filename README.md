@@ -30,11 +30,11 @@ RunCrew는 크루원과 실시간으로 함께 달리고, 달린 만큼 보상�
 
 | 구분 | 기술 |
 |------|------|
-| Frontend | Flutter, Riverpod, Dio, ScreenUtil |
-| Backend | Firebase (Auth, Realtime DB) |
-| Local Storage | Hive, SharedPreferences, flutter_secure_storage |
-| Background | flutter_background_service |
-| Collaboration | Git, GitHub (Issues, PR, Actions) |
+| Frontend | Flutter (Dart), Riverpod, Dio |
+| Backend | Firebase (Authentication, Cloud Functions) |
+| Database | Firebase Realtime Database, Cloud Firestore |
+| Deployment | Firebase App Distribution, Google Play 내부 테스트 트랙 |
+| CI/CD | GitHub Actions |
 
 ## 📂 프로젝트 구조
 
@@ -52,23 +52,20 @@ lib/
 
 ## 🗓 마일스톤 (16주)
 
-| 주차 | 내용 |
-|------|------|
-| 1–2 | 요구사항 정의, Git 환경 구축, 와이어프레임 |
-| 3–4 | 프로젝트 구조 설계, 공통 모듈 구현 |
-| 5–7 | GPS 트래킹, 러닝 기록 저장 |
-| 8 | 🚩 중간 발표 (MVP 데모) |
-| 9–11 | 실시간 그룹 러닝 |
-| 12–13 | 포인트 적립, 샵 |
-| 14 | 테스트 및 버그 수정 |
-| 15 | 배포 준비, 문서화 |
-| 16 | 🏁 최종 발표 |
+| 기간 | 단계 | 주요 작업 |
+|------|------|-----------|
+| W1–4 | 기획, 설계, 초기 세팅 | 제안서, PRD, 와이어프레임, Git/GitHub 환경, 프로젝트 구조 설계 |
+| W5–8 | 핵심 기능 구현, MVP | 로그인, GPS 러닝 트래킹, 기록 저장/조회, 🚩 W8 중간 발표 |
+| W9–12 | 고도화, 추가 기능, 테스트 | 크루 생성/참여, 실시간 위치·페이스 공유, 포인트 적립, 테스트 코드 작성 |
+| W13–16 | 최적화, 문서화, 최종 발표 | 포인트 샵, 성능 개선, 배포, README·ADR 문서화, 🏁 W16 최종 발표 |
+
+> 📋 상세 제안서: [#1 프로젝트 제안서](https://github.com/HC1ab/example_RunCrew/issues/1)
 
 ## 🚀 시작하기
 
 ```bash
 git clone https://github.com/HC1ab/example_RunCrew
-cd runcrew
+cd example_RunCrew
 flutter pub get
 flutter run
 ```
