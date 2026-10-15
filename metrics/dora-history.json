@@ -1,8 +1,8 @@
 [
   {
     "date": "2026-10-15",
-    "deploymentsPerWeek": 0.23,
-    "leadTimeHours": 0.01,
+    "deploymentsPerWeek": 0.47,
+    "leadTimeHours": 0.03,
     "changeFailureRate": 0,
     "mttrHours": null
   }
