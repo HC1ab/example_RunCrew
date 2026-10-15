@@ -1,0 +1,55 @@
+name: DORA Metrics
+
+# DORA 4대 지표를 GitHub API로 수집해 metrics/ 아래 JSON으로 저장한다.
+# - 배포가 끝날 때마다, incident 이슈가 닫히거나 라벨이 붙을 때마다, 매일 00:00 UTC에 실행
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+  issues:
+    types: [labeled, closed, reopened]
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  deployments: read
+  issues: read
+
+concurrency:
+  group: dora-metrics
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    # 이슈 이벤트는 incident 라벨이 붙은 경우만 처리
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'incident')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Collect DORA metrics
+        run: node scripts/dora-metrics.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          WINDOW_DAYS: "30"
+
+      # GITHUB_TOKEN으로 만든 push는 다른 워크플로우를 실행하지 않으므로 Deploy와 무한 루프가 생기지 않음
+      - name: Commit metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add metrics/
+          if git diff --cached --quiet; then
+            echo "No metric changes"
+            exit 0
+          fi
+          git commit -m "chore(metrics): update DORA metrics"
+          git pull --rebase origin main
+          git push origin HEAD:main
