@@ -1,0 +1,73 @@
+{
+  "repository": "HC1ab/example_RunCrew",
+  "generatedAt": "2026-10-15T13:52:57.635Z",
+  "windowDays": 30,
+  "metrics": {
+    "deploymentFrequency": {
+      "total": 0,
+      "perWeek": 0,
+      "level": "Low"
+    },
+    "leadTime": {
+      "medianHours": null,
+      "level": null
+    },
+    "changeFailureRate": {
+      "failedDeployments": 0,
+      "incidents": 0,
+      "totalDeployments": 0,
+      "rate": null,
+      "level": null
+    },
+    "mttr": {
+      "resolvedIncidents": 0,
+      "openIncidents": 0,
+      "meanHours": null,
+      "level": null
+    }
+  },
+  "weekly": [
+    {
+      "weekStart": "2026-08-20",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-08-27",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-09-03",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-09-10",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-09-17",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-09-24",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-10-01",
+      "success": 0,
+      "failure": 0
+    },
+    {
+      "weekStart": "2026-10-08",
+      "success": 0,
+      "failure": 0
+    }
+  ],
+  "deployments": [],
+  "incidents": []
+}

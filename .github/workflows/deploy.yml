@@ -1,0 +1,48 @@
+name: Deploy
+
+# main에 반영될 때마다 대시보드를 GitHub Pages로 배포한다.
+# deploy-pages가 github-pages 환경에 Deployment 기록을 남기고,
+# DORA Metrics 워크플로우가 이 기록을 읽어 지표를 계산한다.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "metrics/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/metrics
+          cp -r dashboard/. _site/
+          cp metrics/*.json _site/metrics/
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

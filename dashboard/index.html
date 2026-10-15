@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RunCrew DORA Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --border: #e3e6eb;
+      --text: #1b1f24;
+      --muted: #5f6b7a;
+      --accent: #2f6fde;
+      --success: #1f9d55;
+      --failure: #d64545;
+      --elite: #1f9d55;
+      --high: #2f6fde;
+      --medium: #c98a00;
+      --low: #d64545;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1216;
+        --surface: #171b21;
+        --border: #2a313b;
+        --text: #e6e9ee;
+        --muted: #97a3b4;
+        --accent: #6c9cff;
+        --success: #3cc47c;
+        --failure: #ff6b6b;
+        --elite: #3cc47c;
+        --high: #6c9cff;
+        --medium: #f0b429;
+        --low: #ff6b6b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    main { max-width: 1120px; margin: 0 auto; padding: 32px 16px 48px; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px; margin-bottom: 24px; }
+    h1 { margin: 0; font-size: 24px; }
+    h2 { margin: 0 0 12px; font-size: 16px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .kpi-label { color: var(--muted); font-size: 13px; }
+    .kpi-value { font-size: 28px; font-weight: 700; margin: 4px 0; font-variant-numeric: tabular-nums; }
+    .kpi-sub { color: var(--muted); font-size: 12px; }
+    .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: var(--muted); }
+    .badge.Elite { background: var(--elite); }
+    .badge.High { background: var(--high); }
+    .badge.Medium { background: var(--medium); }
+    .badge.Low { background: var(--low); }
+    .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .chart-box { position: relative; height: 260px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; }
+    .table-wrap { overflow-x: auto; }
+    .state-success { color: var(--success); font-weight: 600; }
+    .state-failure { color: var(--failure); font-weight: 600; }
+    a { color: var(--accent); }
+    .empty { color: var(--muted); padding: 16px 0; }
+    .error { color: var(--failure); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>🏃 RunCrew DORA Dashboard</h1>
+      <div class="meta" id="subtitle">지표를 불러오는 중…</div>
+    </div>
+    <div class="meta"><a href="https://github.com/HC1ab/example_RunCrew">GitHub 저장소</a></div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="charts">
+    <div class="card">
+      <h2>주간 배포 (최근 8주)</h2>
+      <div class="chart-box"><canvas id="weeklyChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>배포별 Lead Time (시간)</h2>
+      <div class="chart-box"><canvas id="leadTimeChart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>최근 배포</h2>
+    <div class="table-wrap" id="deployments"></div>
+  </section>
+
+  <section class="card">
+    <h2>Incident</h2>
+    <div class="table-wrap" id="incidents"></div>
+  </section>
+</main>
+
+<script>
+  const SOURCES = [
+    "https://raw.githubusercontent.com/HC1ab/example_RunCrew/main/metrics/dora.json",
+    "metrics/dora.json",
+  ];
+
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const fmtDate = (iso) => new Date(iso).toLocaleString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const fmtHours = (h) => (h == null ? "-" : h < 1 ? `${Math.round(h * 60)}분` : `${h.toFixed(1)}시간`);
+  const badge = (level) => (level ? `<span class="badge ${level}">${level}</span>` : `<span class="badge">데이터 없음</span>`);
+
+  async function loadMetrics() {
+    for (const url of SOURCES) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.ok) return await res.json();
+      } catch (_) { /* 다음 소스 시도 */ }
+    }
+    throw new Error("metrics/dora.json을 불러오지 못했습니다.");
+  }
+
+  function renderKpis(m) {
+    const cfr = m.changeFailureRate;
+    const cards = [
+      {
+        label: "Deployment Frequency",
+        value: `${m.deploymentFrequency.perWeek}회/주`,
+        sub: `기간 내 성공 배포 ${m.deploymentFrequency.total}회`,
+        level: m.deploymentFrequency.level,
+      },
+      {
+        label: "Lead Time for Changes",
+        value: fmtHours(m.leadTime.medianHours),
+        sub: "커밋 → 배포 (중앙값)",
+        level: m.leadTime.level,
+      },
+      {
+        label: "Change Failure Rate",
+        value: cfr.rate == null ? "-" : `${(cfr.rate * 100).toFixed(1)}%`,
+        sub: `실패 배포 ${cfr.failedDeployments} + incident ${cfr.incidents} / 배포 ${cfr.totalDeployments}`,
+        level: cfr.level,
+      },
+      {
+        label: "MTTR",
+        value: fmtHours(m.mttr.meanHours),
+        sub: `해결 ${m.mttr.resolvedIncidents}건 · 진행 중 ${m.mttr.openIncidents}건`,
+        level: m.mttr.level,
+      },
+    ];
+    document.getElementById("kpis").innerHTML = cards.map((c) => `
+      <div class="card">
+        <div class="kpi-label">${c.label}</div>
+        <div class="kpi-value">${c.value}</div>
+        <div class="kpi-sub">${badge(c.level)} ${c.sub}</div>
+      </div>`).join("");
+  }
+
+  function renderCharts(data) {
+    Chart.defaults.color = css("--muted");
+    Chart.defaults.borderColor = css("--border");
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+
+    new Chart(document.getElementById("weeklyChart"), {
+      type: "bar",
+      data: {
+        labels: data.weekly.map((w) => w.weekStart.slice(5)),
+        datasets: [
+          { label: "성공", data: data.weekly.map((w) => w.success), backgroundColor: css("--success") },
+          { label: "실패", data: data.weekly.map((w) => w.failure), backgroundColor: css("--failure") },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } },
+      },
+    });
+
+    const withLead = data.deployments.filter((d) => d.leadTimeHours != null);
+    new Chart(document.getElementById("leadTimeChart"), {
+      type: "line",
+      data: {
+        labels: withLead.map((d) => fmtDate(d.finishedAt)),
+        datasets: [{
+          label: "Lead Time (시간)",
+          data: withLead.map((d) => d.leadTimeHours),
+          borderColor: css("--accent"),
+          backgroundColor: css("--accent"),
+          tension: 0.25,
+        }],
+      },
+      options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } },
+    });
+  }
+
+  function renderTables(data) {
+    const repo = `https://github.com/${data.repository}`;
+    const deps = [...data.deployments].reverse().slice(0, 10);
+    document.getElementById("deployments").innerHTML = deps.length ? `
+      <table>
+        <thead><tr><th>완료 시각</th><th>커밋</th><th>상태</th><th>커밋 수</th><th>Lead Time</th></tr></thead>
+        <tbody>${deps.map((d) => `
+          <tr>
+            <td>${fmtDate(d.finishedAt)}</td>
+            <td><a href="${repo}/commit/${d.sha}">${d.sha.slice(0, 7)}</a></td>
+            <td class="state-${d.state}">${d.state}</td>
+            <td>${d.commitCount ?? "-"}</td>
+            <td>${fmtHours(d.leadTimeHours)}</td>
+          </tr>`).join("")}</tbody>
+      </table>` : `<div class="empty">기간 내 배포가 없습니다.</div>`;
+
+    document.getElementById("incidents").innerHTML = data.incidents.length ? `
+      <table>
+        <thead><tr><th>이슈</th><th>발생</th><th>해결</th><th>복구 시간</th></tr></thead>
+        <tbody>${data.incidents.map((i) => `
+          <tr>
+            <td><a href="${i.url}">#${i.number} ${i.title}</a></td>
+            <td>${fmtDate(i.createdAt)}</td>
+            <td>${i.closedAt ? fmtDate(i.closedAt) : "진행 중"}</td>
+            <td>${fmtHours(i.recoveryHours)}</td>
+          </tr>`).join("")}</tbody>
+      </table>` : `<div class="empty">기간 내 incident가 없습니다.</div>`;
+  }
+
+  loadMetrics()
+    .then((data) => {
+      document.getElementById("subtitle").textContent =
+        `최근 ${data.windowDays}일 기준 · 마지막 갱신 ${fmtDate(data.generatedAt)}`;
+      renderKpis(data.metrics);
+      renderCharts(data);
+      renderTables(data);
+    })
+    .catch((err) => {
+      const el = document.getElementById("subtitle");
+      el.textContent = err.message;
+      el.classList.add("error");
+    });
+</script>
+</body>
+</html>
