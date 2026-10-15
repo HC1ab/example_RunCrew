@@ -1,0 +1,54 @@
+name: 🐛 Bug Report
+description: 버그나 오류를 보고합니다
+title: "[Bug] "
+labels: ["type: bug"]
+body:
+  - type: markdown
+    attributes:
+      value: 발견한 버그를 재현할 수 있도록 최대한 구체적으로 작성해 주세요.
+  - type: textarea
+    id: description
+    attributes:
+      label: 버그 설명
+      description: 어떤 문제가 발생했나요?
+      placeholder: 러닝 종료 후 기록 화면에서 거리가 0km로 표시됩니다.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 방법
+      description: 버그를 재현하는 단계를 순서대로 적어 주세요.
+      placeholder: |
+        1. 러닝 시작 버튼 누르기
+        2. 앱을 백그라운드로 전환
+        3. 5분 후 앱으로 돌아와 러닝 종료
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 동작
+      placeholder: 실제 이동 거리가 기록되어야 합니다.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 스크린샷 / 로그
+      description: 있으면 첨부해 주세요.
+  - type: input
+    id: environment
+    attributes:
+      label: 환경
+      placeholder: "예: Android 15, Galaxy S24, 앱 v0.1.0"
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true

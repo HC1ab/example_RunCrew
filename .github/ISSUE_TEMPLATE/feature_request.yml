@@ -1,0 +1,50 @@
+name: ✨ Feature Request
+description: 새로운 기능이나 개선 사항을 제안합니다
+title: "[Feature] "
+labels: ["type: feature"]
+body:
+  - type: textarea
+    id: user-story
+    attributes:
+      label: 사용자 스토리
+      description: 누가, 무엇을, 왜 원하는지 적어 주세요.
+      placeholder: 초보 러너로서, 함께 뛰는 크루원의 페이스를 보고 싶다. 혼자 뛸 때보다 동기 부여가 되기 때문이다.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 기능 설명
+      description: 구현할 내용을 구체적으로 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건 (Acceptance Criteria)
+      placeholder: |
+        - [ ] 조건 1
+        - [ ] 조건 2
+    validations:
+      required: true
+  - type: dropdown
+    id: story-points
+    attributes:
+      label: 예상 Story Points
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "5"
+        - "8"
+        - "13"
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
