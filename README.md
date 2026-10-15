@@ -38,6 +38,34 @@ RunCrew는 크루원과 실시간으로 함께 달리고, 달린 만큼 보상�
 | Deployment | Firebase App Distribution, Google Play 내부 테스트 트랙 |
 | CI/CD | GitHub Actions |
 
+## 📊 DORA Metrics
+
+GitHub Actions가 DORA 4대 지표를 자동으로 수집하고, Chart.js 대시보드로 보여줍니다.
+
+👉 **[대시보드 바로가기](https://hc1ab.github.io/example_RunCrew/)** · [원본 데이터 (metrics/dora.json)](metrics/dora.json)
+
+![DORA Dashboard](docs/images/dora-dashboard.png)
+
+| 지표 | 계산 방식 | 데이터 출처 |
+|------|-----------|-------------|
+| Deployment Frequency | 최근 30일 성공 배포 수 (주당 평균) | GitHub Deployments (`github-pages`) |
+| Lead Time for Changes | 커밋 작성 → 해당 커밋이 포함된 배포 성공 (중앙값, 봇 커밋 제외) | Deployments + Compare API |
+| Change Failure Rate | (실패 배포 + `incident` 이슈) / 전체 배포 | Deployments + Issues |
+| MTTR | `incident` 이슈 생성 → 닫힘 (평균) | Issues |
+
+**자동화 흐름**
+
+```
+PR 머지 → Deploy 워크플로우 (GitHub Pages 배포, Deployment 기록)
+       → DORA Metrics 워크플로우 (지표 계산 → metrics/dora.json 커밋)
+       → 대시보드가 최신 dora.json을 읽어 표시
+```
+
+- [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): main 반영 시 대시보드 배포
+- [`.github/workflows/dora-metrics.yml`](.github/workflows/dora-metrics.yml): 배포 완료, `incident` 이슈 변경, 매일 00:00 UTC, 수동 실행 시 수집
+- [`scripts/dora-metrics.mjs`](scripts/dora-metrics.mjs): GitHub API로 지표 계산 (외부 의존성 없음)
+- [`dashboard/index.html`](dashboard/index.html): Chart.js 대시보드
+
 ## 📂 프로젝트 구조
 
 ```

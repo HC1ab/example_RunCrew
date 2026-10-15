@@ -64,6 +64,8 @@ function median(values) {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+const isBotCommit = (c) => c.author?.type === "Bot" || c.commit.author.name.endsWith("[bot]");
+
 const mean = (values) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
 
 // DORA State of DevOps 기준 성과 등급
@@ -103,12 +105,17 @@ async function collectDeployments() {
   for (const dep of deployments) {
     if (dep.state !== "success") continue;
 
+    // 첫 배포는 이전 배포가 없으므로 첫 번째 부모 커밋을 기준으로 삼는다 (머지된 PR 커밋 전체 포함)
+    const baseSha = previousSha ?? (await gh(`/commits/${dep.sha}`)).parents[0]?.sha;
+
     let commits = [];
-    if (!previousSha) {
+    if (!baseSha) {
       commits = [await gh(`/commits/${dep.sha}`)];
-    } else if (previousSha !== dep.sha) {
-      commits = (await gh(`/compare/${previousSha}...${dep.sha}`)).commits;
+    } else if (baseSha !== dep.sha) {
+      commits = (await gh(`/compare/${baseSha}...${dep.sha}`)).commits;
     }
+    // 지표 갱신용 봇 커밋은 개발 변경이 아니므로 제외
+    commits = commits.filter((c) => !isBotCommit(c));
 
     dep.commitCount = commits.length;
     dep.leadTimesHours = commits.map((c) => hoursBetween(c.commit.author.date, dep.finishedAt));
