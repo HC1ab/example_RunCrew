@@ -1,6 +1,6 @@
 {
   "repository": "HC1ab/example_RunCrew",
-  "generatedAt": "2026-10-15T14:09:39.756Z",
+  "generatedAt": "2026-10-15T14:13:42.247Z",
   "windowDays": 30,
   "metrics": {
     "deploymentFrequency": {
@@ -14,14 +14,14 @@
     },
     "changeFailureRate": {
       "failedDeployments": 0,
-      "incidents": 0,
+      "incidents": 1,
       "totalDeployments": 2,
-      "rate": 0,
-      "level": "Elite"
+      "rate": 0.5,
+      "level": "Low"
     },
     "mttr": {
       "resolvedIncidents": 0,
-      "openIncidents": 0,
+      "openIncidents": 1,
       "meanHours": null,
       "level": null
     }
@@ -88,5 +88,14 @@
       "leadTimeHours": 0.03
     }
   ],
-  "incidents": []
+  "incidents": [
+    {
+      "number": 21,
+      "title": "[Incident] DORA Lead Time에 봇 커밋이 포함되어 지표 왜곡",
+      "url": "https://github.com/HC1ab/example_RunCrew/issues/21",
+      "createdAt": "2026-10-15T14:13:30Z",
+      "closedAt": null,
+      "recoveryHours": null
+    }
+  ]
 }
