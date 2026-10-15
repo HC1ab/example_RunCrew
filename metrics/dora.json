@@ -1,6 +1,6 @@
 {
   "repository": "HC1ab/example_RunCrew",
-  "generatedAt": "2026-10-15T14:13:42.247Z",
+  "generatedAt": "2026-10-15T14:22:30.493Z",
   "windowDays": 30,
   "metrics": {
     "deploymentFrequency": {
@@ -9,7 +9,7 @@
       "level": "Medium"
     },
     "leadTime": {
-      "medianHours": 0.03,
+      "medianHours": 0.13,
       "level": "Elite"
     },
     "changeFailureRate": {
@@ -20,10 +20,10 @@
       "level": "Low"
     },
     "mttr": {
-      "resolvedIncidents": 0,
-      "openIncidents": 1,
-      "meanHours": null,
-      "level": null
+      "resolvedIncidents": 1,
+      "openIncidents": 0,
+      "meanHours": 0.15,
+      "level": "Elite"
     }
   },
   "weekly": [
@@ -75,8 +75,8 @@
       "createdAt": "2026-10-15T14:06:42Z",
       "finishedAt": "2026-10-15T14:07:18Z",
       "state": "success",
-      "commitCount": 1,
-      "leadTimeHours": 0.01
+      "commitCount": 2,
+      "leadTimeHours": 0.13
     },
     {
       "id": 7094865570,
@@ -84,8 +84,8 @@
       "createdAt": "2026-10-15T14:08:15Z",
       "finishedAt": "2026-10-15T14:09:29Z",
       "state": "success",
-      "commitCount": 3,
-      "leadTimeHours": 0.03
+      "commitCount": 2,
+      "leadTimeHours": 0.14
     }
   ],
   "incidents": [
@@ -94,8 +94,8 @@
       "title": "[Incident] DORA Lead Time에 봇 커밋이 포함되어 지표 왜곡",
       "url": "https://github.com/HC1ab/example_RunCrew/issues/21",
       "createdAt": "2026-10-15T14:13:30Z",
-      "closedAt": null,
-      "recoveryHours": null
+      "closedAt": "2026-10-15T14:22:20Z",
+      "recoveryHours": 0.15
     }
   ]
 }
