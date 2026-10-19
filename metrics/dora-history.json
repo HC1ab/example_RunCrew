@@ -26,5 +26,12 @@
     "leadTimeHours": 0.03,
     "changeFailureRate": 0.25,
     "mttrHours": 0.15
+  },
+  {
+    "date": "2026-10-19",
+    "deploymentsPerWeek": 0.93,
+    "leadTimeHours": 0.03,
+    "changeFailureRate": 0.25,
+    "mttrHours": 0.15
   }
 ]
