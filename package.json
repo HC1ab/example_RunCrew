@@ -1,0 +1,26 @@
+{
+  "name": "runcrew-dora-metrics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RunCrew 프로젝트의 DORA 4대 지표 수집 도구와 대시보드",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HC1ab/example_RunCrew.git"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=scripts/dora/**",
+    "collect": "node scripts/dora-metrics.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0"
+  }
+}

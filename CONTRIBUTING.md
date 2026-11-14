@@ -143,18 +143,38 @@ Fixes #21
 ### 필요 도구
 
 - Git
-- Node.js 20 이상
+- Node.js 20.19 이상 (22, 24 권장)
 
-### DORA 지표 수집 스크립트 실행
+### 설치와 검사
 
 ```bash
 git clone git@github.com:HC1ab/example_RunCrew.git
 cd example_RunCrew
-REPO=HC1ab/example_RunCrew GITHUB_TOKEN=<your-token> node scripts/dora-metrics.mjs
+npm ci                  # 의존성 설치 (package-lock.json 기준)
+npm run lint            # ESLint
+npm test                # 단위 테스트 (node:test)
+npm run test:coverage   # 커버리지 리포트 (Node 22 이상)
+```
+
+PR을 올리기 전에 `npm run lint`와 `npm test`가 통과하는지 확인해 주세요. CI에서도 같은 검사를 실행합니다.
+
+### 코드 구조
+
+| 경로 | 역할 |
+|------|------|
+| `scripts/dora/metrics.mjs` | 지표 계산 (순수 함수, 테스트 대상) |
+| `scripts/dora/github.mjs` | GitHub API 수집 (`fetch` 주입 가능) |
+| `scripts/dora-metrics.mjs` | 진입점: 수집 → 계산 → `metrics/` 저장 |
+| `test/` | 단위 테스트 |
+
+### DORA 지표 수집 스크립트 실행
+
+```bash
+REPO=HC1ab/example_RunCrew GITHUB_TOKEN=<your-token> OUT_DIR=/tmp/dora npm run collect
 ```
 
 - 토큰은 **절대 커밋하지 마세요.** 환경 변수로만 넘깁니다.
-- 결과는 `metrics/dora.json`에 저장됩니다. 로컬 실행 결과는 커밋하지 않습니다 (CI가 갱신).
+- `OUT_DIR`을 지정하지 않으면 `metrics/`에 저장됩니다. 로컬 실행 결과는 커밋하지 않습니다 (CI가 갱신).
 
 ### 대시보드 미리보기
 
