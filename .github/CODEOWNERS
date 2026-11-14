@@ -1,0 +1,16 @@
+# 코드 소유자: 해당 경로가 바뀌면 자동으로 리뷰어로 지정된다.
+# 나중에 정의된 규칙이 우선한다.
+
+# 기본 소유자
+*                       @HC1ab
+
+# CI/CD와 저장소 설정
+/.github/               @HC1ab
+
+# DORA 지표 수집과 대시보드
+/scripts/               @HC1ab
+/dashboard/             @HC1ab
+
+# 문서
+/docs/                  @HC1ab
+*.md                    @HC1ab
