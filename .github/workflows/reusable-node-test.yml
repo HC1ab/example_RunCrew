@@ -14,9 +14,9 @@ on:
         type: string
         default: "[20, 22, 24]"
       cache:
-        description: npm 캐시 사용 여부
-        type: boolean
-        default: true
+        description: 의존성 캐시 전략 (node_modules / npm / none)
+        type: string
+        default: node_modules
 
 permissions:
   contents: read
