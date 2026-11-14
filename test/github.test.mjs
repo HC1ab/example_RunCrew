@@ -17,11 +17,13 @@ function fakeFetch(routes) {
   return { impl, calls };
 }
 
-const commit = (sha, date, { bot = false } = {}) => ({
+const commit = (sha, date, { message = "feat: change", name = "dev" } = {}) => ({
   sha,
-  author: { type: bot ? "Bot" : "User" },
-  commit: { author: { name: bot ? "github-actions[bot]" : "dev", date } },
+  commit: { message, author: { name, date } },
 });
+
+const metricsCommit = (sha, date) =>
+  commit(sha, date, { message: "chore(metrics): update DORA metrics", name: "github-actions[bot]" });
 
 describe("createClient", () => {
   it("100개 단위로 다음 페이지를 요청한다", async () => {
@@ -63,7 +65,8 @@ describe("collectDeployments", () => {
     },
     "/compare/s1...s2": {
       commits: [
-        commit("bot", "2026-11-01T02:00:00Z", { bot: true }),
+        metricsCommit("metrics", "2026-11-01T02:00:00Z"),
+        commit("dep", "2026-11-01T22:00:00Z", { message: "chore(deps): bump eslint", name: "dependabot[bot]" }),
         commit("c2", "2026-11-02T00:00:00Z"),
       ],
     },
@@ -84,11 +87,12 @@ describe("collectDeployments", () => {
     assert.equal(first.leadTimeHours, 1.25);
   });
 
-  it("봇 커밋은 커밋 수와 리드 타임에서 제외한다", async () => {
+  it("지표 갱신 커밋은 제외하고 Dependabot 커밋은 포함한다", async () => {
     const client = createClient({ repo: "o/r", token: "t", fetchImpl: fakeFetch(routes).impl });
     const [, second] = await collectDeployments(client, "github-pages");
-    assert.equal(second.commitCount, 1);
-    assert.equal(second.leadTimeHours, 2);
+    assert.equal(second.commitCount, 2);
+    // Dependabot 4h, c2 2h의 중앙값
+    assert.equal(second.leadTimeHours, 3);
   });
 
   it("실패한 배포는 리드 타임을 계산하지 않는다", async () => {

@@ -12,6 +12,7 @@ export const WEEK = 7 * DAY;
 
 const HOURS_PER_DAY = 24;
 const HOURS_PER_WEEK = 7 * HOURS_PER_DAY;
+// DORA 기준의 '한 달'을 30일로 근사한다
 const HOURS_PER_MONTH = 30 * HOURS_PER_DAY;
 
 export const hoursBetween = (from, to) => (new Date(to) - new Date(from)) / HOUR;
@@ -28,9 +29,11 @@ export function median(values) {
 export const mean = (values) =>
   values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
 
-// 지표 갱신용 봇 커밋(github-actions[bot] 등)은 개발 변경이 아니므로 Lead Time에서 제외한다
-export const isBotCommit = (c) =>
-  c.author?.type === "Bot" || (c.commit?.author?.name ?? "").endsWith("[bot]");
+// DORA Metrics 워크플로우가 만드는 지표 갱신 커밋은 개발 변경이 아니므로 Lead Time에서 제외한다.
+// Dependabot 등 다른 봇의 커밋은 실제로 배포되는 변경이므로 포함한다.
+export const METRICS_COMMIT_PREFIX = "chore(metrics):";
+
+export const isMetricsCommit = (c) => (c.commit?.message ?? "").startsWith(METRICS_COMMIT_PREFIX);
 
 // DORA State of DevOps 기준 성과 등급
 export const levels = {
@@ -60,10 +63,10 @@ export const levels = {
             : "Low",
 };
 
-// 배포에 포함된 커밋들의 리드 타임(시간)을 계산한다. 봇 커밋은 제외
+// 배포에 포함된 커밋들의 리드 타임(시간)을 계산한다. 지표 갱신 커밋은 제외
 export function leadTimesFor(commits, finishedAt) {
   return commits
-    .filter((c) => !isBotCommit(c))
+    .filter((c) => !isMetricsCommit(c))
     .map((c) => hoursBetween(c.commit.author.date, finishedAt));
 }
 

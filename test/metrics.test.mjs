@@ -8,7 +8,7 @@ import {
   computeReport,
   formatSummary,
   hoursBetween,
-  isBotCommit,
+  isMetricsCommit,
   leadTimesFor,
   levels,
   mean,
@@ -56,29 +56,34 @@ describe("기본 통계 함수", () => {
   });
 });
 
-describe("isBotCommit", () => {
-  it("author.type이 Bot이면 봇 커밋", () => {
-    assert.equal(isBotCommit({ author: { type: "Bot" }, commit: { author: { name: "x" } } }), true);
+const commit = (message, date = iso(0), name = "dev") => ({ commit: { message, author: { name, date } } });
+
+describe("isMetricsCommit", () => {
+  it("chore(metrics): 커밋은 지표 갱신 커밋", () => {
+    assert.equal(isMetricsCommit(commit("chore(metrics): update DORA metrics", iso(0), "github-actions[bot]")), true);
   });
 
-  it("작성자 이름이 [bot]으로 끝나면 봇 커밋", () => {
-    assert.equal(isBotCommit({ author: null, commit: { author: { name: "github-actions[bot]" } } }), true);
+  it("Dependabot 커밋은 실제 변경이므로 제외 대상이 아님", () => {
+    assert.equal(isMetricsCommit(commit("chore(deps): bump eslint from 10.15.0 to 10.16.0", iso(0), "dependabot[bot]")), false);
   });
 
-  it("사람이 작성한 커밋은 봇이 아님", () => {
-    assert.equal(isBotCommit({ author: { type: "User" }, commit: { author: { name: "Sheine hwang" } } }), false);
+  it("사람이 작성한 커밋은 지표 갱신 커밋이 아님", () => {
+    assert.equal(isMetricsCommit(commit("feat: add group run")), false);
+  });
+
+  it("메시지가 없어도 오류 없이 false", () => {
+    assert.equal(isMetricsCommit({}), false);
   });
 });
 
 describe("leadTimesFor", () => {
-  it("봇 커밋을 빼고 커밋별 리드 타임을 계산한다", () => {
-    const finishedAt = iso(0);
+  it("지표 갱신 커밋만 빼고 커밋별 리드 타임을 계산한다", () => {
     const commits = [
-      { author: { type: "User" }, commit: { author: { name: "dev", date: iso(-2 * HOUR) } } },
-      { author: { type: "Bot" }, commit: { author: { name: "github-actions[bot]", date: iso(-1 * HOUR) } } },
-      { author: { type: "User" }, commit: { author: { name: "dev", date: iso(-4 * HOUR) } } },
+      commit("feat: add dashboard", iso(-2 * HOUR)),
+      commit("chore(metrics): update DORA metrics", iso(-1 * HOUR), "github-actions[bot]"),
+      commit("chore(deps): bump globals", iso(-4 * HOUR), "dependabot[bot]"),
     ];
-    assert.deepEqual(leadTimesFor(commits, finishedAt), [2, 4]);
+    assert.deepEqual(leadTimesFor(commits, iso(0)), [2, 4]);
   });
 });
 
