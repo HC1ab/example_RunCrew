@@ -58,20 +58,27 @@ GitHub Actions가 DORA 4대 지표를 자동으로 수집하고, Chart.js 대시
 [![CI/CD](https://github.com/HC1ab/example_RunCrew/actions/workflows/ci.yml/badge.svg)](https://github.com/HC1ab/example_RunCrew/actions/workflows/ci.yml)
 
 ```
-PR        : Lint → Test (9개 조합) → Build
-main push : Lint → Test (9개 조합) → Build → Deploy → Notify (Discord)
-                                                  └→ DORA Metrics (지표 계산 → metrics/dora.json 커밋)
+Detect changes ─┬─ code 변경 → Lint → Test (Matrix 9개) ─┐
+                └─ site 변경 ────────────────────────────┴→ Build → Deploy → Notify (Discord)
+                                                            (main만)   └→ DORA Metrics
+문서만 변경 → 위 단계 모두 생략, CI Result만 통과
 
 Test Matrix = Node 20 / 22 / 24 × Ubuntu / Windows / macOS
+              − macOS + Node 20 (exclude)  + Ubuntu + Node current (include, experimental)
 ```
 
-| 워크플로우 | 실행 시점 | 내용 |
-|------------|-----------|------|
-| [`ci.yml`](.github/workflows/ci.yml) | PR, main push, 수동 | Lint → Test(Matrix) → Build(`site`·`coverage` 아티팩트 업로드) → Deploy(아티팩트 다운로드 후 Pages 배포) → Notify |
-| [`dora-metrics.yml`](.github/workflows/dora-metrics.yml) | main 배포 완료, `incident` 이슈 변경, 매일 00:00 UTC, 수동 | DORA 4대 지표 수집 |
+| 구성 요소 | 파일 | 역할 |
+|-----------|------|------|
+| 메인 파이프라인 | [`ci.yml`](.github/workflows/ci.yml) | 변경 감지 → Lint → Test → Build(`site`·`coverage` 아티팩트 업로드) → Deploy(아티팩트 다운로드 후 Pages 배포) → Notify → CI Result |
+| Reusable Workflow | [`reusable-node-test.yml`](.github/workflows/reusable-node-test.yml) | OS·Node 목록을 입력으로 받는 Matrix 테스트 |
+| Composite Action | [`setup-node-project`](.github/actions/setup-node-project/action.yml) | Node 설치 + 의존성 캐시 + `npm ci` (캐시 적중 시 설치 생략) |
+| DORA 수집 | [`dora-metrics.yml`](.github/workflows/dora-metrics.yml) | main 배포 완료, `incident` 이슈 변경, 매일 00:00 UTC, 수동 실행 시 지표 수집 |
 
-- **PR**에서는 Lint, Test, Build까지만 실행하고 배포하지 않습니다.
-- 배포 알림은 저장소 Secret `DISCORD_WEBHOOK_URL`로 주입합니다. Secret이 없으면 알림 단계를 건너뜁니다.
+- **선택적 실행**: 코드(`scripts/`, `test/`, `package*.json`, 워크플로우)가 바뀌면 Lint·Test, 대시보드(`dashboard/`)가 바뀌면 Build·Deploy만 실행합니다. 문서만 바뀐 PR은 테스트를 건너뜁니다.
+- **선택적 배포**: main push이면서 빌드가 성공하고 코드나 대시보드가 바뀌었을 때만 배포합니다. 그래서 DORA **Deployment Frequency**는 "실제 변경이 배포된 횟수"만 셉니다.
+- **브랜치 보호용 체크**: `CI Result` 하나만 필수 체크로 걸면 됩니다. 일부 job이 skipped여도 실패가 없으면 통과합니다.
+- **Secret**: 배포 알림은 `DISCORD_WEBHOOK_URL` Secret으로 주입합니다. Secret이 없으면 알림 단계를 건너뜁니다.
+- **최적화 측정 결과**: [CI 최적화 전후 비교 리포트](docs/ci-optimization-report.md)
 - 코드: [`scripts/dora/`](scripts/dora/) (지표 계산·수집), [`dashboard/index.html`](dashboard/index.html) (Chart.js 대시보드), [`test/`](test/) (단위 테스트)
 
 ## 📂 프로젝트 구조
