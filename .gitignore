@@ -1,0 +1,14 @@
+# Node
+node_modules/
+coverage/
+npm-debug.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 로컬 환경 변수 (토큰 등 민감정보)
+.env
+.env.*
