@@ -1,0 +1,53 @@
+name: Reusable Node Test
+
+# 여러 OS × Node 버전 조합으로 테스트를 실행하는 재사용 워크플로우.
+# 다른 워크플로우에서 `uses: ./.github/workflows/reusable-node-test.yml`로 호출한다.
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: 테스트할 OS 목록 (JSON 배열)
+        type: string
+        default: '["ubuntu-latest", "windows-latest", "macos-latest"]'
+      node:
+        description: 테스트할 Node.js 버전 목록 (JSON 배열)
+        type: string
+        default: "[20, 22, 24]"
+      cache:
+        description: npm 캐시 사용 여부
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    # 실험용 조합(최신 Current 버전)은 실패해도 전체 결과를 막지 않는다
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.os) }}
+        node: ${{ fromJSON(inputs.node) }}
+        experimental: [false]
+        include:
+          # 다음 LTS 대비: 가장 최신 Current 버전을 Ubuntu에서만 미리 확인
+          - os: ubuntu-latest
+            node: current
+            experimental: true
+        exclude:
+          # macOS는 실행 비용이 높아 가장 오래된 지원 버전(20)은 Ubuntu/Windows에서만 확인
+          - os: macos-latest
+            node: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-node-project
+        with:
+          node-version: ${{ matrix.node }}
+          cache: ${{ inputs.cache }}
+
+      - run: npm test
