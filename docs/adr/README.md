@@ -11,6 +11,7 @@
 | [0003](0003-use-merge-commits.md) | PR은 merge commit 방식으로 머지한다 | 승인됨 | 2026-10-15 |
 | [0004](0004-deploy-only-on-code-or-site-changes.md) | 코드나 대시보드가 바뀐 경우에만 배포한다 | 승인됨 | 2026-11-14 |
 | [0005](0005-cache-node-modules-instead-of-npm-cache.md) | npm 다운로드 캐시 대신 node_modules를 캐시한다 | 승인됨 | 2026-11-14 |
+| [0006](0006-store-metrics-on-data-branch.md) | 자동 생성 지표는 dora-metrics 데이터 브랜치에 저장한다 | 승인됨 | 2026-11-14 |
 
 ## 새 ADR 작성하기
 
