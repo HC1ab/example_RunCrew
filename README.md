@@ -106,6 +106,14 @@ flutter run
 |------|------|--------|
 | 황세인 | 디자인 / 개발 | [@HC1ab](https://github.com/HC1ab) |
 
+## 🤝 기여하기
+
+이슈와 PR은 언제나 환영합니다. 시작하기 전에 아래 문서를 읽어 주세요.
+
+- [기여 가이드 (CONTRIBUTING)](CONTRIBUTING.md): 브랜치 전략, Conventional Commits, PR 절차
+- [코드 리뷰 가이드](docs/REVIEW_GUIDE.md): `[MUST]` / `[SHOULD]` / `[NITS]` 피드백 태그
+- [행동 강령 (CODE_OF_CONDUCT)](CODE_OF_CONDUCT.md)
+
 ## 📄 License
 
-MIT License
+[MIT License](LICENSE)
