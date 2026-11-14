@@ -1,0 +1,30 @@
+name: Setup Node project
+description: Node.js 설치, npm 캐시 복원, 의존성 설치(npm ci)를 한 번에 처리한다
+
+inputs:
+  node-version:
+    description: 설치할 Node.js 버전 (예 22, 24, current)
+    required: false
+    default: "22"
+  cache:
+    description: npm 캐시 사용 여부 ("true" / "false"). 캐싱 효과 측정 시 false로 끈다
+    required: false
+    default: "true"
+
+outputs:
+  cache-hit:
+    description: npm 캐시를 복원했는지 여부
+    value: ${{ steps.setup.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - id: setup
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.cache == 'true' && 'npm' || '' }}
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci --no-audit --no-fund
