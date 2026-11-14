@@ -128,6 +128,7 @@ flutter run
 - [기여 가이드 (CONTRIBUTING)](CONTRIBUTING.md): 브랜치 전략, Conventional Commits, PR 절차
 - [코드 리뷰 가이드](docs/REVIEW_GUIDE.md): `[MUST]` / `[SHOULD]` / `[NITS]` 피드백 태그
 - [행동 강령 (CODE_OF_CONDUCT)](CODE_OF_CONDUCT.md)
+- [기술 결정 기록 (ADR)](docs/adr/README.md): 주요 설계 결정과 그 이유
 
 ## 📄 License
 
