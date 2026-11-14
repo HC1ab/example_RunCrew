@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   test:
-    name: Node ${{ matrix.node }} / ${{ matrix.os }}
+    name: Node ${{ matrix.node }} / ${{ matrix.os }}${{ matrix.experimental && ' (experimental)' || '' }}
     runs-on: ${{ matrix.os }}
     # 실험용 조합(최신 Current 버전)은 실패해도 전체 결과를 막지 않는다
     continue-on-error: ${{ matrix.experimental }}
