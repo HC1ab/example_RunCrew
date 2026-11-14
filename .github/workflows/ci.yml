@@ -64,6 +64,7 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # 커버리지가 line/branch/function 80% 미만이면 실패 (package.json의 test:coverage 기준)
       - name: Coverage report
         run: npm run test:coverage -- --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=lcov.info
 
@@ -127,16 +128,17 @@ jobs:
 
   notify:
     name: Notify
-    needs: deploy
-    # 배포가 실패해도 알림은 보낸다
-    if: always() && needs.deploy.result != 'skipped'
+    needs: [lint, test, build, deploy]
+    # main push에서는 어느 단계가 실패하든(뒤 단계가 skipped여도) 결과를 알린다
+    if: always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord notification
         env:
           # Secret은 환경 변수로만 넘기고 명령어나 로그에 직접 쓰지 않는다
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          RESULT: ${{ needs.deploy.result }}
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+          RESULTS: "lint=${{ needs.lint.result }} test=${{ needs.test.result }} build=${{ needs.build.result }} deploy=${{ needs.deploy.result }}"
           SHA: ${{ github.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -144,8 +146,11 @@ jobs:
             echo "::notice::DISCORD_WEBHOOK_URL secret is not set. Skipping notification."
             exit 0
           fi
-          if [ "$RESULT" = "success" ]; then ICON="✅"; else ICON="❌"; fi
-          MESSAGE="${ICON} RunCrew 배포 ${RESULT} (\`${SHA:0:7}\`) ${RUN_URL}"
+          if [ "$FAILED" = "true" ]; then
+            MESSAGE="❌ RunCrew 파이프라인 실패 (\`${SHA:0:7}\`) ${RESULTS} ${RUN_URL}"
+          else
+            MESSAGE="✅ RunCrew 배포 성공 (\`${SHA:0:7}\`) ${RUN_URL}"
+          fi
           PAYLOAD=$(jq -n --arg content "$MESSAGE" '{content: $content}')
           curl -fsS -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL" > /dev/null
           echo "Notification sent"
