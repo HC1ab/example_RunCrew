@@ -1,9 +1,10 @@
 name: CI/CD
 
-# Lint → Test(Matrix) → Build(아티팩트 업로드) → Deploy(아티팩트 다운로드) → Notify
+# Changes → Lint → Test(Matrix, 재사용 워크플로우) → Build(아티팩트 업로드) → Deploy(아티팩트 다운로드) → Notify
+# - 변경 파일을 감지해 필요한 단계만 실행한다 (문서만 바뀌면 Lint/Test/Build/Deploy 생략)
 # - PR: Lint, Test, Build까지만 실행 (배포 없음)
-# - main push: 전체 파이프라인 실행. deploy-pages가 github-pages 환경에 Deployment 기록을 남기고,
-#   DORA Metrics 워크플로우가 이 기록으로 지표를 계산한다.
+# - main push: 코드나 대시보드가 바뀌었을 때만 배포. deploy-pages가 github-pages 환경에
+#   Deployment 기록을 남기고, DORA Metrics 워크플로우가 이 기록으로 지표를 계산한다.
 on:
   push:
     branches: [main]
@@ -11,6 +12,11 @@ on:
       - "metrics/**"
   pull_request:
   workflow_dispatch:
+    inputs:
+      cache:
+        description: npm 캐시 사용 (캐싱 효과 측정 시 끔)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -20,49 +26,71 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+env:
+  # push/PR에서는 inputs가 비어 있으므로 기본값 true
+  USE_CACHE: ${{ github.event_name != 'workflow_dispatch' || inputs.cache }}
+
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      # 수동 실행은 항상 전체 파이프라인을 돌린다
+      code: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.code == 'true' }}
+      site: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.site == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            code:
+              - "scripts/**"
+              - "test/**"
+              - "package.json"
+              - "package-lock.json"
+              - "eslint.config.js"
+              - ".github/workflows/ci.yml"
+              - ".github/workflows/reusable-node-test.yml"
+              - ".github/actions/**"
+            site:
+              - "dashboard/**"
+
   lint:
     name: Lint
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup-node-project
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+          cache: ${{ env.USE_CACHE }}
       - run: npm run lint
 
   test:
-    name: Test (Node ${{ matrix.node }}, ${{ matrix.os }})
+    name: Test
     needs: lint
-    runs-on: ${{ matrix.os }}
-    strategy:
-      # 한 조합이 실패해도 나머지 결과를 끝까지 확인한다
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node: [20, 22, 24]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-      - run: npm ci
-      - run: npm test
+    uses: ./.github/workflows/reusable-node-test.yml
+    with:
+      cache: ${{ github.event_name != 'workflow_dispatch' || inputs.cache }}
 
   build:
     name: Build
-    needs: test
+    needs: [changes, test]
+    # 코드가 안 바뀌어 Test가 skipped여도, 대시보드가 바뀌었으면 빌드한다
+    if: >-
+      always() && !failure() && !cancelled() &&
+      (needs.changes.outputs.code == 'true' || needs.changes.outputs.site == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup-node-project
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
+          cache: ${{ env.USE_CACHE }}
 
       # 커버리지가 line/branch/function 80% 미만이면 실패 (package.json의 test:coverage 기준)
       - name: Coverage report
@@ -99,7 +127,10 @@ jobs:
   deploy:
     name: Deploy
     needs: build
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    # main push(또는 main 수동 실행)이고 빌드가 성공했을 때만 배포
+    if: >-
+      always() && needs.build.result == 'success' &&
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -129,8 +160,11 @@ jobs:
   notify:
     name: Notify
     needs: [lint, test, build, deploy]
-    # main push에서는 어느 단계가 실패하든(뒤 단계가 skipped여도) 결과를 알린다
-    if: always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    # main에서 어느 단계가 실패했거나, 배포가 실제로 일어났을 때만 알린다
+    # (문서만 바뀌어 전부 skipped인 경우는 알리지 않음)
+    if: >-
+      always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || needs.deploy.result == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord notification
@@ -154,3 +188,20 @@ jobs:
           PAYLOAD=$(jq -n --arg content "$MESSAGE" '{content: $content}')
           curl -fsS -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL" > /dev/null
           echo "Notification sent"
+
+  # 브랜치 보호 규칙의 필수 체크로 쓰는 단일 결과 job.
+  # 변경 감지로 일부 job이 skipped여도 실패한 job이 없으면 통과한다.
+  result:
+    name: CI Result
+    needs: [changes, lint, test, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) echo "::error::CI failed"; exit 1 ;;
+          esac
