@@ -1,0 +1,77 @@
+name: Weekly Summary
+
+# 매주 월요일 09:00(KST)에 지난 7일의 이슈·PR·DORA 지표를 요약한 이슈를 만든다.
+# 회의 없이도 팀 전체가 같은 진행 상황을 볼 수 있게 하는 비동기 보고 도구.
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: metrics
+
+      - name: Build summary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          since=$(date -u -d '7 days ago' +%Y-%m-%d)
+          today=$(date -u +%Y-%m-%d)
+          week=$(date -u +%G-W%V)
+
+          search() { gh api -X GET search/issues -f q="repo:$REPO $1" -f per_page=100 --jq "$2"; }
+
+          opened=$(search "is:issue created:>=$since -label:report" '.total_count')
+          closed=$(search "is:issue closed:>=$since -label:report" '.total_count')
+          merged=$(search "is:pr merged:>=$since" '.total_count')
+          merged_list=$(search "is:pr merged:>=$since" '.items[] | "- #\(.number) \(.title)"')
+          open_total=$(search "is:issue is:open -label:report" '.total_count')
+          incidents=$(search "is:issue label:incident created:>=$since" '.items[] | "- #\(.number) \(.title) (\(.state))"')
+          breached=$(search "is:open label:\"status: sla-breached\"" '.items[] | "- #\(.number) \(.title)"')
+
+          dora=$(jq -r '.metrics |
+            "| Deployment Frequency | \(.deploymentFrequency.perWeek)회/주 | \(.deploymentFrequency.level // "-") |",
+            "| Lead Time for Changes | \(.leadTime.medianHours // "-")시간 | \(.leadTime.level // "-") |",
+            "| Change Failure Rate | \(if .changeFailureRate.rate == null then "-" else "\(.changeFailureRate.rate * 100 | floor)%" end) | \(.changeFailureRate.level // "-") |",
+            "| MTTR | \(.mttr.meanHours // "-")시간 | \(.mttr.level // "-") |"' metrics/dora.json)
+
+          {
+            echo "## 📅 주간 요약 ($since ~ $today)"
+            echo
+            echo "| 항목 | 이번 주 |"
+            echo "|---|---|"
+            echo "| 새 이슈 | $opened |"
+            echo "| 닫힌 이슈 | $closed |"
+            echo "| 머지된 PR | $merged |"
+            echo "| 열려 있는 이슈 (전체) | $open_total |"
+            echo
+            echo "### ✅ 머지된 PR"
+            echo "${merged_list:-- 없음}"
+            echo
+            echo "### 🚨 Incident"
+            echo "${incidents:-- 없음}"
+            echo
+            echo "### ⏰ SLA 초과"
+            echo "${breached:-- 없음}"
+            echo
+            echo "### 📊 DORA 지표 (최근 30일)"
+            echo
+            echo "| 지표 | 값 | 등급 |"
+            echo "|---|---|---|"
+            echo "$dora"
+            echo
+            echo "---"
+            echo "🤖 [Weekly Summary 워크플로우](https://github.com/$REPO/actions/workflows/weekly-summary.yml)가 자동으로 만든 이슈입니다. 확인 후 닫아 주세요."
+          } > summary.md
+
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          gh issue create -R "$REPO" --title "📅 주간 요약 $week" --label report --body-file summary.md
