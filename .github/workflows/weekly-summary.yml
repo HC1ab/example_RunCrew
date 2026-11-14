@@ -10,6 +10,8 @@ on:
 permissions:
   contents: read
   issues: write
+  # 검색 API로 머지된 PR을 조회하려면 PR 읽기 권한이 필요하다
+  pull-requests: read
 
 jobs:
   summary:
