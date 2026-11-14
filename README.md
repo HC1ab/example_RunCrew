@@ -7,7 +7,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-📋 [칸반 보드 (GitHub Project)](https://github.com/users/HC1ab/projects/1) · [마일스톤](https://github.com/HC1ab/example_RunCrew/milestones) · [이슈](https://github.com/HC1ab/example_RunCrew/issues) · [제안서](https://github.com/HC1ab/example_RunCrew/issues/1)
+📋 [칸반 보드 (GitHub Project)](https://github.com/users/HC1ab/projects/1) · [마일스톤](https://github.com/HC1ab/example_RunCrew/milestones) · [이슈](https://github.com/HC1ab/example_RunCrew/issues) · [제안서](https://github.com/HC1ab/example_RunCrew/issues/1) · [Wiki](https://github.com/HC1ab/example_RunCrew/wiki) · [Discussions](https://github.com/HC1ab/example_RunCrew/discussions) · [릴리스](https://github.com/HC1ab/example_RunCrew/releases)
 
 ## 📌 프로젝트 소개
 
