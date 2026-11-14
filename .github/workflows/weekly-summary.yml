@@ -17,9 +17,10 @@ jobs:
   summary:
     runs-on: ubuntu-latest
     steps:
+      # 지표 JSON은 데이터 브랜치에 있다 (ADR-0006)
       - uses: actions/checkout@v7
         with:
-          sparse-checkout: metrics
+          ref: dora-metrics
 
       - name: Build summary
         env:
@@ -44,7 +45,7 @@ jobs:
             "| Deployment Frequency | \(.deploymentFrequency.perWeek)회/주 | \(.deploymentFrequency.level // "-") |",
             "| Lead Time for Changes | \(.leadTime.medianHours // "-")시간 | \(.leadTime.level // "-") |",
             "| Change Failure Rate | \(if .changeFailureRate.rate == null then "-" else "\(.changeFailureRate.rate * 100 | floor)%" end) | \(.changeFailureRate.level // "-") |",
-            "| MTTR | \(.mttr.meanHours // "-")시간 | \(.mttr.level // "-") |"' metrics/dora.json)
+            "| MTTR | \(.mttr.meanHours // "-")시간 | \(.mttr.level // "-") |"' dora.json)
 
           {
             echo "## 📅 주간 요약 ($since ~ $today)"
