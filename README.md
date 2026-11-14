@@ -49,22 +49,30 @@ GitHub Actions가 DORA 4대 지표를 자동으로 수집하고, Chart.js 대시
 | 지표 | 계산 방식 | 데이터 출처 |
 |------|-----------|-------------|
 | Deployment Frequency | 최근 30일 성공 배포 수 (주당 평균) | GitHub Deployments (`github-pages`) |
-| Lead Time for Changes | 커밋 작성 → 해당 커밋이 포함된 배포 성공 (중앙값, 봇 커밋 제외) | Deployments + Compare API |
+| Lead Time for Changes | 커밋 작성 → 해당 커밋이 포함된 배포 성공 (중앙값, 지표 갱신 커밋 제외) | Deployments + Compare API |
 | Change Failure Rate | (실패 배포 + `incident` 이슈) / 전체 배포 | Deployments + Issues |
 | MTTR | `incident` 이슈 생성 → 닫힘 (평균) | Issues |
 
-**자동화 흐름**
+## ⚙️ CI/CD
+
+[![CI/CD](https://github.com/HC1ab/example_RunCrew/actions/workflows/ci.yml/badge.svg)](https://github.com/HC1ab/example_RunCrew/actions/workflows/ci.yml)
 
 ```
-PR 머지 → Deploy 워크플로우 (GitHub Pages 배포, Deployment 기록)
-       → DORA Metrics 워크플로우 (지표 계산 → metrics/dora.json 커밋)
-       → 대시보드가 최신 dora.json을 읽어 표시
+PR        : Lint → Test (9개 조합) → Build
+main push : Lint → Test (9개 조합) → Build → Deploy → Notify (Discord)
+                                                  └→ DORA Metrics (지표 계산 → metrics/dora.json 커밋)
+
+Test Matrix = Node 20 / 22 / 24 × Ubuntu / Windows / macOS
 ```
 
-- [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): main 반영 시 대시보드 배포
-- [`.github/workflows/dora-metrics.yml`](.github/workflows/dora-metrics.yml): 배포 완료, `incident` 이슈 변경, 매일 00:00 UTC, 수동 실행 시 수집
-- [`scripts/dora-metrics.mjs`](scripts/dora-metrics.mjs): GitHub API로 지표 계산 (외부 의존성 없음)
-- [`dashboard/index.html`](dashboard/index.html): Chart.js 대시보드
+| 워크플로우 | 실행 시점 | 내용 |
+|------------|-----------|------|
+| [`ci.yml`](.github/workflows/ci.yml) | PR, main push, 수동 | Lint → Test(Matrix) → Build(`site`·`coverage` 아티팩트 업로드) → Deploy(아티팩트 다운로드 후 Pages 배포) → Notify |
+| [`dora-metrics.yml`](.github/workflows/dora-metrics.yml) | main 배포 완료, `incident` 이슈 변경, 매일 00:00 UTC, 수동 | DORA 4대 지표 수집 |
+
+- **PR**에서는 Lint, Test, Build까지만 실행하고 배포하지 않습니다.
+- 배포 알림은 저장소 Secret `DISCORD_WEBHOOK_URL`로 주입합니다. Secret이 없으면 알림 단계를 건너뜁니다.
+- 코드: [`scripts/dora/`](scripts/dora/) (지표 계산·수집), [`dashboard/index.html`](dashboard/index.html) (Chart.js 대시보드), [`test/`](test/) (단위 테스트)
 
 ## 📂 프로젝트 구조
 
