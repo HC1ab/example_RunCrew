@@ -1,0 +1,156 @@
+name: CI/CD
+
+# Lint → Test(Matrix) → Build(아티팩트 업로드) → Deploy(아티팩트 다운로드) → Notify
+# - PR: Lint, Test, Build까지만 실행 (배포 없음)
+# - main push: 전체 파이프라인 실행. deploy-pages가 github-pages 환경에 Deployment 기록을 남기고,
+#   DORA Metrics 워크플로우가 이 기록으로 지표를 계산한다.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "metrics/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 같은 브랜치/PR의 이전 실행은 취소한다 (main 배포는 순서대로 끝까지 실행)
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    name: Test (Node ${{ matrix.node }}, ${{ matrix.os }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # 한 조합이 실패해도 나머지 결과를 끝까지 확인한다
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # 커버리지가 line/branch/function 80% 미만이면 실패 (package.json의 test:coverage 기준)
+      - name: Coverage report
+        run: npm run test:coverage -- --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=lcov.info
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/metrics
+          cp -r dashboard/. _site/
+          cp metrics/*.json _site/metrics/
+          cat > _site/build-info.json <<EOF
+          {
+            "sha": "${{ github.sha }}",
+            "ref": "${{ github.ref_name }}",
+            "run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "builtAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: _site
+          retention-days: 7
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: lcov.info
+          retention-days: 7
+
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - name: Download site artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: site
+          path: _site
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  notify:
+    name: Notify
+    needs: [lint, test, build, deploy]
+    # main push에서는 어느 단계가 실패하든(뒤 단계가 skipped여도) 결과를 알린다
+    if: always() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        env:
+          # Secret은 환경 변수로만 넘기고 명령어나 로그에 직접 쓰지 않는다
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+          RESULTS: "lint=${{ needs.lint.result }} test=${{ needs.test.result }} build=${{ needs.build.result }} deploy=${{ needs.deploy.result }}"
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "::notice::DISCORD_WEBHOOK_URL secret is not set. Skipping notification."
+            exit 0
+          fi
+          if [ "$FAILED" = "true" ]; then
+            MESSAGE="❌ RunCrew 파이프라인 실패 (\`${SHA:0:7}\`) ${RESULTS} ${RUN_URL}"
+          else
+            MESSAGE="✅ RunCrew 배포 성공 (\`${SHA:0:7}\`) ${RUN_URL}"
+          fi
+          PAYLOAD=$(jq -n --arg content "$MESSAGE" '{content: $content}')
+          curl -fsS -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL" > /dev/null
+          echo "Notification sent"

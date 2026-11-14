@@ -1,6 +1,6 @@
 // GitHub REST API로 DORA 원본 데이터(배포, incident)를 수집한다
 //
-// - 배포: GitHub Deployments (Deploy 워크플로우가 github-pages 환경에 생성)
+// - 배포: GitHub Deployments (CI/CD 워크플로우의 Deploy 단계가 github-pages 환경에 생성)
 // - 장애: `incident` 라벨이 붙은 Issue
 
 import { hoursBetween, leadTimesFor, median } from "./metrics.mjs";

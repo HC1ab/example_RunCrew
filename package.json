@@ -15,7 +15,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=scripts/dora/**",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=scripts/dora/** --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-functions=80",
     "collect": "node scripts/dora-metrics.mjs"
   },
   "devDependencies": {

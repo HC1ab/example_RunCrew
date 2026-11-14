@@ -4,8 +4,9 @@ name: DORA Metrics
 # - 배포가 끝날 때마다, incident 이슈가 닫히거나 라벨이 붙을 때마다, 매일 00:00 UTC에 실행
 on:
   workflow_run:
-    workflows: [Deploy]
+    workflows: ["CI/CD"]
     types: [completed]
+    branches: [main]
   issues:
     types: [labeled, closed, reopened]
   schedule:
@@ -23,8 +24,11 @@ concurrency:
 
 jobs:
   collect:
-    # 이슈 이벤트는 incident 라벨이 붙은 경우만 처리
-    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'incident')
+    # - 이슈 이벤트는 incident 라벨이 붙은 경우만 처리
+    # - CI/CD 완료 이벤트는 main push(배포가 있는 실행)만 처리
+    if: >-
+      (github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'incident')) &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
