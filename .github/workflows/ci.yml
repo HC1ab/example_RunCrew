@@ -8,9 +8,8 @@ name: CI/CD
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "metrics/**"
   pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       cache:
@@ -101,7 +100,11 @@ jobs:
         run: |
           mkdir -p _site/metrics
           cp -r dashboard/. _site/
-          cp metrics/*.json _site/metrics/
+          # 지표는 데이터 브랜치(dora-metrics)에서 가져온다 (ADR-0006)
+          git fetch -q --depth=1 origin dora-metrics
+          for f in dora.json dora-history.json; do
+            git show "origin/dora-metrics:$f" > "_site/metrics/$f"
+          done
           cat > _site/build-info.json <<EOF
           {
             "sha": "${{ github.sha }}",

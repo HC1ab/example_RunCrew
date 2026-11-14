@@ -107,7 +107,8 @@
 
 <script>
   const SOURCES = [
-    "https://raw.githubusercontent.com/HC1ab/example_RunCrew/main/metrics/dora.json",
+    // 데이터 브랜치의 최신 지표 → 배포 시점에 함께 복사된 지표 순으로 시도 (ADR-0006)
+    "https://raw.githubusercontent.com/HC1ab/example_RunCrew/dora-metrics/dora.json",
     "metrics/dora.json",
   ];
 
@@ -123,7 +124,7 @@
         if (res.ok) return await res.json();
       } catch (_) { /* 다음 소스 시도 */ }
     }
-    throw new Error("metrics/dora.json을 불러오지 못했습니다.");
+    throw new Error("dora.json을 불러오지 못했습니다.");
   }
 
   function renderKpis(m) {

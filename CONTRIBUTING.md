@@ -164,7 +164,7 @@ PR을 올리기 전에 `npm run lint`와 `npm test`가 통과하는지 확인해
 |------|------|
 | `scripts/dora/metrics.mjs` | 지표 계산 (순수 함수, 테스트 대상) |
 | `scripts/dora/github.mjs` | GitHub API 수집 (`fetch` 주입 가능) |
-| `scripts/dora-metrics.mjs` | 진입점: 수집 → 계산 → `metrics/` 저장 |
+| `scripts/dora-metrics.mjs` | 진입점: 수집 → 계산 → `OUT_DIR`(기본 `metrics/`)에 저장 |
 | `test/` | 단위 테스트 |
 
 ### DORA 지표 수집 스크립트 실행
@@ -174,7 +174,8 @@ REPO=HC1ab/example_RunCrew GITHUB_TOKEN=<your-token> OUT_DIR=/tmp/dora npm run c
 ```
 
 - 토큰은 **절대 커밋하지 마세요.** 환경 변수로만 넘깁니다.
-- `OUT_DIR`을 지정하지 않으면 `metrics/`에 저장됩니다. 로컬 실행 결과는 커밋하지 않습니다 (CI가 갱신).
+- `OUT_DIR`을 지정하지 않으면 `metrics/`에 저장됩니다. 로컬 실행 결과는 커밋하지 않습니다 (`metrics/`는 `.gitignore` 대상).
+- CI에서는 지표를 [`dora-metrics` 데이터 브랜치](https://github.com/HC1ab/example_RunCrew/tree/dora-metrics)에 저장합니다 ([ADR-0006](docs/adr/0006-store-metrics-on-data-branch.md)).
 
 ### 대시보드 미리보기
 

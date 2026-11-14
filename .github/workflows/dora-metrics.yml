@@ -1,7 +1,8 @@
 name: DORA Metrics
 
-# DORA 4대 지표를 GitHub API로 수집해 metrics/ 아래 JSON으로 저장한다.
+# DORA 4대 지표를 GitHub API로 수집해 데이터 브랜치(dora-metrics)에 JSON으로 저장한다.
 # - 배포가 끝날 때마다, incident 이슈가 닫히거나 라벨이 붙을 때마다, 매일 00:00 UTC에 실행
+# - main은 브랜치 보호로 PR을 거쳐야만 바뀌므로 자동 생성 데이터는 별도 브랜치에 둔다 (ADR-0006)
 on:
   workflow_run:
     workflows: ["CI/CD"]
@@ -22,6 +23,10 @@ concurrency:
   group: dora-metrics
   cancel-in-progress: false
 
+env:
+  DATA_BRANCH: dora-metrics
+  DATA_DIR: data
+
 jobs:
   collect:
     # - 이슈 이벤트는 incident 라벨이 붙은 경우만 처리
@@ -31,37 +36,43 @@ jobs:
       (github.event_name != 'workflow_run' || github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     steps:
+      # 수집 스크립트는 main에서 가져온다
       - uses: actions/checkout@v7
+        with:
+          ref: main
 
       - uses: actions/setup-node@v7
         with:
           node-version: 22
 
       # 지표는 매번 API에서 새로 계산하므로, 다른 실행이 먼저 push해서 충돌하면
-      # 최신 main 위에서 다시 계산해 재시도한다 (rebase 충돌 방지).
-      # GITHUB_TOKEN으로 만든 push는 다른 워크플로우를 실행하지 않으므로 Deploy와 무한 루프가 생기지 않음
+      # 최신 데이터 브랜치 위에서 다시 계산해 재시도한다 (rebase 충돌 방지).
+      # GITHUB_TOKEN으로 만든 push는 다른 워크플로우를 실행하지 않으므로 무한 루프가 생기지 않음
       - name: Collect and commit DORA metrics
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           WINDOW_DAYS: "30"
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
-            git fetch -q origin main
-            git reset -q --hard origin/main
-            node scripts/dora-metrics.mjs
-            git add metrics/
-            if git diff --cached --quiet; then
+            git fetch -q origin "$DATA_BRANCH"
+            rm -rf "$DATA_DIR" && git worktree prune
+            git worktree add -q --detach "$DATA_DIR" "origin/$DATA_BRANCH"
+
+            OUT_DIR="$DATA_DIR" node scripts/dora-metrics.mjs
+
+            git -C "$DATA_DIR" add dora.json dora-history.json
+            if git -C "$DATA_DIR" diff --cached --quiet; then
               echo "No metric changes"
               exit 0
             fi
-            git commit -q -m "chore(metrics): update DORA metrics"
-            if git push origin HEAD:main; then
+            git -C "$DATA_DIR" commit -q -m "chore(metrics): update DORA metrics"
+            if git -C "$DATA_DIR" push origin "HEAD:$DATA_BRANCH"; then
               exit 0
             fi
-            echo "Push rejected (attempt $attempt), retrying on latest main"
+            echo "Push rejected (attempt $attempt), retrying on latest $DATA_BRANCH"
             sleep $((attempt * 5))
           done
           exit 1

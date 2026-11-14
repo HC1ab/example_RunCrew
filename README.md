@@ -42,7 +42,7 @@ RunCrew는 크루원과 실시간으로 함께 달리고, 달린 만큼 보상�
 
 GitHub Actions가 DORA 4대 지표를 자동으로 수집하고, Chart.js 대시보드로 보여줍니다.
 
-👉 **[대시보드 바로가기](https://hc1ab.github.io/example_RunCrew/)** · [원본 데이터 (metrics/dora.json)](metrics/dora.json)
+👉 **[대시보드 바로가기](https://hc1ab.github.io/example_RunCrew/)** · [원본 데이터 (dora-metrics 브랜치)](https://github.com/HC1ab/example_RunCrew/tree/dora-metrics)
 
 ![DORA Dashboard](docs/images/dora-dashboard.png)
 
