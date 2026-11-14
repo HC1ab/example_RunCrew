@@ -1,22 +1,22 @@
 {
   "repository": "HC1ab/example_RunCrew",
-  "generatedAt": "2026-11-14T12:23:37.677Z",
+  "generatedAt": "2026-11-14T12:29:33.044Z",
   "windowDays": 30,
   "metrics": {
     "deploymentFrequency": {
-      "total": 8,
-      "perWeek": 1.87,
+      "total": 9,
+      "perWeek": 2.1,
       "level": "High"
     },
     "leadTime": {
-      "medianHours": 0.06,
+      "medianHours": 0.1,
       "level": "Elite"
     },
     "changeFailureRate": {
       "failedDeployments": 0,
       "incidents": 1,
-      "totalDeployments": 8,
-      "rate": 0.125,
+      "totalDeployments": 9,
+      "rate": 0.1111,
       "level": "Medium"
     },
     "mttr": {
@@ -64,7 +64,7 @@
     },
     {
       "weekStart": "2026-11-07",
-      "success": 4,
+      "success": 5,
       "failure": 0
     }
   ],
@@ -140,6 +140,15 @@
       "state": "success",
       "commitCount": 7,
       "leadTimeHours": 0.16
+    },
+    {
+      "id": 7787549359,
+      "sha": "da6df50b4bc684abe5a2e9da212922a207d95e58",
+      "createdAt": "2026-11-14T12:28:39Z",
+      "finishedAt": "2026-11-14T12:28:59Z",
+      "state": "success",
+      "commitCount": 25,
+      "leadTimeHours": 0.21
     }
   ],
   "incidents": [
