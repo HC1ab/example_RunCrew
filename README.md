@@ -73,6 +73,9 @@ Test Matrix = Node 20 / 22 / 24 × Ubuntu / Windows / macOS
 | Reusable Workflow | [`reusable-node-test.yml`](.github/workflows/reusable-node-test.yml) | OS·Node 목록을 입력으로 받는 Matrix 테스트 |
 | Composite Action | [`setup-node-project`](.github/actions/setup-node-project/action.yml) | Node 설치 + 의존성 캐시 + `npm ci` (캐시 적중 시 설치 생략) |
 | DORA 수집 | [`dora-metrics.yml`](.github/workflows/dora-metrics.yml) | main 배포 완료, `incident` 이슈 변경, 매일 00:00 UTC, 수동 실행 시 지표 수집 |
+| 이슈 자동 응답 | [`issue-auto-respond.yml`](.github/workflows/issue-auto-respond.yml) | 새 이슈에 안내 댓글, 외부 기여자 이슈에 `status: triage` 라벨 |
+| SLA 추적 | [`sla-tracker.yml`](.github/workflows/sla-tracker.yml) | 6시간마다: 첫 응답 48시간 초과 이슈, 리뷰 24시간 초과 PR에 `status: sla-breached` |
+| 주간 요약 | [`weekly-summary.yml`](.github/workflows/weekly-summary.yml) | 매주 월요일 09:00(KST): 이슈·PR·incident·SLA·DORA 요약 이슈 생성 (`report` 라벨) |
 
 - **선택적 실행**: 코드(`scripts/`, `test/`, `package*.json`, 워크플로우)가 바뀌면 Lint·Test, 대시보드(`dashboard/`)가 바뀌면 Build·Deploy만 실행합니다. 문서만 바뀐 PR은 테스트를 건너뜁니다.
 - **선택적 배포**: main push이면서 빌드가 성공하고 코드나 대시보드가 바뀌었을 때만 배포합니다. 그래서 DORA **Deployment Frequency**는 "실제 변경이 배포된 횟수"만 셉니다.
