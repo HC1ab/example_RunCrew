@@ -8,7 +8,7 @@
 
 | 항목 | 결과 |
 |------|------|
-| **선택적 실행 (문서만 변경된 PR)** | 실행 job 11개 → **{{DOCS_JOBS}}개**, job 시간 합계 189초 → **{{DOCS_JOBSUM}}초 ({{DOCS_IMPROVE}})** |
+| **선택적 실행 (문서만 변경된 PR)** | 실행 job 11개 → **2개**, job 시간 합계 189초 → **8초 (−95.8%)** |
 | **코드 PR 전체 파이프라인** | job 시간 합계 189초 → **171초 (−9.5%)** (job은 2개 늘었지만 macOS 1개 제외 효과) |
 | **의존성 캐시: npm 다운로드 캐시** | 설치 단계 합계 61.3초 → 75.0초 (**+22.3%, 오히려 느려짐**) |
 | **의존성 캐시: node_modules 캐시** | 설치 단계 합계 61.3초 → **57.3초 (−6.5%)**, Windows는 job당 10.9초 → **8.4초 (−22.9%)** |
@@ -75,7 +75,7 @@
 | 구분 | 실행 | 실행된 job | Wall | Job 합계 |
 |------|------|-----------:|-----:|---------:|
 | 최적화 전 (모든 PR에서 전체 실행) | [43591223780](https://github.com/HC1ab/example_RunCrew/actions/runs/43591223780) | 11 | 64초 | 189초 |
-| 최적화 후 (이 리포트 PR, 문서만 변경) | [{{DOCS_RUN}}](https://github.com/HC1ab/example_RunCrew/actions/runs/{{DOCS_RUN}}) | **{{DOCS_JOBS}}** | **{{DOCS_WALL}}초** | **{{DOCS_JOBSUM}}초 ({{DOCS_IMPROVE}})** |
+| 최적화 후 (이 리포트 PR, 문서만 변경) | [43593572881](https://github.com/HC1ab/example_RunCrew/actions/runs/43593572881) | **2** | **14초 (−78.1%)** | **8초 (−95.8%)** |
 
 문서만 바뀌면 `Detect changes`가 `code=false`, `site=false`를 내보내고 Lint·Test·Build·Deploy가 모두 생략됩니다. `CI Result`는 실패한 job이 없으므로 통과합니다.
 
@@ -103,7 +103,7 @@
 
 | 기법 | 적용 내용 | 효과 |
 |------|-----------|------|
-| **변경 파일 감지** | `dorny/paths-filter`로 `code` / `site` 분류 (커밋 SHA 고정) | 문서 PR에서 job {{DOCS_SKIPPED}}개 생략 |
+| **변경 파일 감지** | `dorny/paths-filter`로 `code` / `site` 분류 (커밋 SHA 고정) | 문서 PR에서 job 11개 생략 |
 | **선택적 배포** | main push + 빌드 성공 + 코드/대시보드 변경일 때만 Deploy | 내용이 같은 재배포 방지 |
 | **Composite Action** | Node 설치·캐시·설치를 [`setup-node-project`](../.github/actions/setup-node-project/action.yml) 하나로 | 설정 3곳 → 1곳 |
 | **Reusable Workflow** | Matrix 테스트를 [`reusable-node-test.yml`](../.github/workflows/reusable-node-test.yml)로 분리 | OS·버전 목록을 입력으로 재사용 |
