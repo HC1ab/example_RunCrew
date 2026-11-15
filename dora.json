@@ -1,11 +1,11 @@
 {
   "repository": "HC1ab/example_RunCrew",
-  "generatedAt": "2026-11-14T12:57:02.732Z",
+  "generatedAt": "2026-11-15T05:19:35.853Z",
   "windowDays": 30,
   "metrics": {
     "deploymentFrequency": {
-      "total": 9,
-      "perWeek": 2.1,
+      "total": 5,
+      "perWeek": 1.17,
       "level": "High"
     },
     "leadTime": {
@@ -14,97 +14,61 @@
     },
     "changeFailureRate": {
       "failedDeployments": 0,
-      "incidents": 1,
-      "totalDeployments": 9,
-      "rate": 0.1111,
-      "level": "Medium"
+      "incidents": 0,
+      "totalDeployments": 5,
+      "rate": 0,
+      "level": "Elite"
     },
     "mttr": {
-      "resolvedIncidents": 1,
+      "resolvedIncidents": 0,
       "openIncidents": 0,
-      "meanHours": 0.15,
-      "level": "Elite"
+      "meanHours": null,
+      "level": null
     }
   },
   "weekly": [
     {
-      "weekStart": "2026-09-19",
+      "weekStart": "2026-09-20",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-09-26",
+      "weekStart": "2026-09-27",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-03",
+      "weekStart": "2026-10-04",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-10",
+      "weekStart": "2026-10-11",
       "success": 4,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-17",
+      "weekStart": "2026-10-18",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-24",
+      "weekStart": "2026-10-25",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-31",
+      "weekStart": "2026-11-01",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-11-07",
+      "weekStart": "2026-11-08",
       "success": 5,
       "failure": 0
     }
   ],
   "deployments": [
-    {
-      "id": 7094828700,
-      "sha": "6fc02fa6d83c67e7691ab5c9e62366922c1847dc",
-      "createdAt": "2026-10-15T14:06:42Z",
-      "finishedAt": "2026-10-15T14:07:18Z",
-      "state": "success",
-      "commitCount": 2,
-      "leadTimeHours": 0.13
-    },
-    {
-      "id": 7094865570,
-      "sha": "d8e03e9229f9e640be2745e87425c739faf268ff",
-      "createdAt": "2026-10-15T14:08:15Z",
-      "finishedAt": "2026-10-15T14:09:29Z",
-      "state": "success",
-      "commitCount": 2,
-      "leadTimeHours": 0.14
-    },
-    {
-      "id": 7095222075,
-      "sha": "100ee6630a75c7441a185f53c41101dc916f624f",
-      "createdAt": "2026-10-15T14:22:33Z",
-      "finishedAt": "2026-10-15T14:22:50Z",
-      "state": "success",
-      "commitCount": 3,
-      "leadTimeHours": 0.14
-    },
-    {
-      "id": 7095413590,
-      "sha": "f761e140e821d7f4872e4756e3fff57fa960da45",
-      "createdAt": "2026-10-15T14:30:16Z",
-      "finishedAt": "2026-10-15T14:30:31Z",
-      "state": "success",
-      "commitCount": 3,
-      "leadTimeHours": 0.03
-    },
     {
       "id": 7786913026,
       "sha": "f446756d53e1941238fa1a199558a42deb172d95",
@@ -151,14 +115,5 @@
       "leadTimeHours": 0.21
     }
   ],
-  "incidents": [
-    {
-      "number": 21,
-      "title": "[Incident] DORA Lead Time에 봇 커밋이 포함되어 지표 왜곡",
-      "url": "https://github.com/HC1ab/example_RunCrew/issues/21",
-      "createdAt": "2026-10-15T14:13:30Z",
-      "closedAt": "2026-10-15T14:22:20Z",
-      "recoveryHours": 0.15
-    }
-  ]
+  "incidents": []
 }
