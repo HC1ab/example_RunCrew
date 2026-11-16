@@ -222,5 +222,12 @@
     "leadTimeHours": 0.1,
     "changeFailureRate": 0,
     "mttrHours": null
+  },
+  {
+    "date": "2026-11-16",
+    "deploymentsPerWeek": 1.4,
+    "leadTimeHours": 0.11,
+    "changeFailureRate": 0,
+    "mttrHours": null
   }
 ]

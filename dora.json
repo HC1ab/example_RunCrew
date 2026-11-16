@@ -1,21 +1,21 @@
 {
   "repository": "HC1ab/example_RunCrew",
-  "generatedAt": "2026-11-15T05:19:35.853Z",
+  "generatedAt": "2026-11-16T05:17:38.591Z",
   "windowDays": 30,
   "metrics": {
     "deploymentFrequency": {
-      "total": 5,
-      "perWeek": 1.17,
+      "total": 6,
+      "perWeek": 1.4,
       "level": "High"
     },
     "leadTime": {
-      "medianHours": 0.1,
+      "medianHours": 0.11,
       "level": "Elite"
     },
     "changeFailureRate": {
       "failedDeployments": 0,
       "incidents": 0,
-      "totalDeployments": 5,
+      "totalDeployments": 6,
       "rate": 0,
       "level": "Elite"
     },
@@ -28,43 +28,43 @@
   },
   "weekly": [
     {
-      "weekStart": "2026-09-20",
+      "weekStart": "2026-09-21",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-09-27",
+      "weekStart": "2026-09-28",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-04",
+      "weekStart": "2026-10-05",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-11",
+      "weekStart": "2026-10-12",
       "success": 4,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-18",
+      "weekStart": "2026-10-19",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-25",
+      "weekStart": "2026-10-26",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-11-01",
+      "weekStart": "2026-11-02",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-11-08",
-      "success": 5,
+      "weekStart": "2026-11-09",
+      "success": 6,
       "failure": 0
     }
   ],
@@ -113,6 +113,15 @@
       "state": "success",
       "commitCount": 25,
       "leadTimeHours": 0.21
+    },
+    {
+      "id": 7799465928,
+      "sha": "43605c14ace728cea1af7af2cd9fce1dd1722263",
+      "createdAt": "2026-11-15T06:12:06Z",
+      "finishedAt": "2026-11-15T06:12:27Z",
+      "state": "success",
+      "commitCount": 3,
+      "leadTimeHours": 17.28
     }
   ],
   "incidents": []
