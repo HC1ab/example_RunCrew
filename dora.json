@@ -1,6 +1,6 @@
 {
   "repository": "HC1ab/example_RunCrew",
-  "generatedAt": "2026-11-21T05:59:15.325Z",
+  "generatedAt": "2026-11-22T05:35:12.646Z",
   "windowDays": 30,
   "metrics": {
     "deploymentFrequency": {
@@ -28,43 +28,43 @@
   },
   "weekly": [
     {
-      "weekStart": "2026-09-26",
+      "weekStart": "2026-09-27",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-03",
+      "weekStart": "2026-10-04",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-10",
+      "weekStart": "2026-10-11",
       "success": 4,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-17",
+      "weekStart": "2026-10-18",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-24",
+      "weekStart": "2026-10-25",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-10-31",
+      "weekStart": "2026-11-01",
       "success": 0,
       "failure": 0
     },
     {
-      "weekStart": "2026-11-07",
-      "success": 0,
+      "weekStart": "2026-11-08",
+      "success": 5,
       "failure": 0
     },
     {
-      "weekStart": "2026-11-14",
-      "success": 6,
+      "weekStart": "2026-11-15",
+      "success": 1,
       "failure": 0
     }
   ],
